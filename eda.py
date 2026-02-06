@@ -152,14 +152,14 @@ def plot_silhouette_comparison(hier_results, kmeans_results):
         hier_scores,
         marker="o",
         color="#c31e23",
-        label="Hierarchical (correlation)"
+        label="Hierarchical (Pearson correlation)"
     )
     plt.plot(
         ks,
         kmeans_scores,
         marker="o",
         color="#0d7d87",
-        label="k-means (Euclidean on z-scored profiles)"
+        label="k-means (Euclidean)"
     )
 
     # --- Annotate each point with cluster sizes ---
