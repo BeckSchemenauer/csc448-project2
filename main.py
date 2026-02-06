@@ -17,9 +17,6 @@ print("Loading and transforming data...")
 raw_df, processed_df, ratio_cols = load_and_transform()
 print("Finished loading and transforming data...")
 
-# Optional EDA outputs
-visualize_to_pdf(raw_df, processed_df, ratio_cols)
-
 # 2) Build log2 expression matrix
 X_log = processed_df[[f"Log2_{c}" for c in ratio_cols]].to_numpy(dtype=np.float64)
 X_log = np.nan_to_num(X_log, nan=0.0)  # Handle NaNs from log2(0)
@@ -68,3 +65,7 @@ processed_df['Cluster'] = hier_labels
 
 # The plotting function will use the 'Cluster' column to sort for the 3rd plot.
 plot_triple_clustered_heatmap(processed_df, ratio_cols)
+
+print("Generating distribution plots...")
+visualize_to_pdf(raw_df, processed_df, log_zscore_df, ratio_cols)
+print("Done.")

@@ -17,31 +17,43 @@ def load_and_transform(file_path: str = "Data/diauxic_raw_ratios.txt"):
     return df, log_df, ratio_cols
 
 
-def visualize_to_pdf(df_raw, df_log, ratio_cols, output_name="distribution_plots.pdf"):
+def visualize_to_pdf(df_raw, df_log, df_z, ratio_cols, output_name="distribution_plots.pdf"):
     sns.set_context("talk")
-    fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+    fig, axes = plt.subplots(1, 3, figsize=(20, 6))  # Changed to 3 subplots
 
-    # Flatten and clean data
+    # 1. Flatten and clean data
     raw_vals = df_raw[ratio_cols].values.flatten()
     log_vals = df_log[[f"Log2_{c}" for c in ratio_cols]].values.flatten()
+    # Assuming the Z-score columns have the "Z_" prefix from your zscore_per_gene_df function
+    z_vals = df_z[[f"Z_Log2_{c}" for c in ratio_cols]].values.flatten()
+
     raw_vals = raw_vals[~np.isnan(raw_vals)]
     log_vals = log_vals[~np.isnan(log_vals)]
+    z_vals = z_vals[~np.isnan(z_vals)]
 
-    # Raw Ratios Plot - added edgecolor and linewidth
+    # 2. Raw Ratios Plot
     sns.histplot(raw_vals, kde=False, ax=axes[0], color='#154734',
                  edgecolor='black', linewidth=0.5, binwidth=0.1)
-    axes[0].set_title("Distribution: Raw Ratios")
+    # axes[0].set_title("Distribution: Raw Ratios") # Commented for Overleaf
     axes[0].set_xlabel("Ratio Value")
 
-    # Log2 Plot with subscript in title - added edgecolor and linewidth
+    # 3. Log2 Plot
     sns.histplot(log_vals, kde=False, ax=axes[1], color='#154734',
                  edgecolor='black', linewidth=0.5, binwidth=0.2)
-    axes[1].set_title(r"Distribution: $\mathrm{Log}_2$ Transformed")
+    # axes[1].set_title(r"Distribution: $\mathrm{Log}_2$ Transformed") # Commented for Overleaf
     axes[1].set_xlabel(r"$\log_2$ Ratio")
 
-    # Decrease tick mark font size (labelsize)
+    # 4. Z-scored Plot
+    sns.histplot(z_vals, kde=False, ax=axes[2], color='#154734',
+                 edgecolor='black', linewidth=0.5, binwidth=0.2)
+    # axes[2].set_title("Distribution: Z-scored") # Commented for Overleaf
+    axes[2].set_xlabel("Z-score")
+
+    # Formatting
     for ax in axes:
         ax.tick_params(axis='both', which='major', labelsize=12)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
 
     plt.tight_layout()
     plt.savefig(output_name, format='pdf', bbox_inches='tight')
