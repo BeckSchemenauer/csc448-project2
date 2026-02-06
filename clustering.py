@@ -1,7 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from numba import njit, prange
-from scipy.cluster.hierarchy import linkage, dendrogram
+from scipy.cluster.hierarchy import linkage
 from scipy.cluster.hierarchy import fcluster
 from scipy.spatial.distance import squareform
 from sklearn.metrics import silhouette_score
@@ -109,71 +108,6 @@ def hierarchical_silhouette_by_k(
         }
 
     return results
-
-def plot_silhouette_comparison(hier_results, kmeans_results):
-    """
-    Plot silhouette score vs k for hierarchical clustering and k-means.
-    """
-    ks = sorted(hier_results.keys())
-
-    hier_scores = [hier_results[k]["silhouette"] for k in ks]
-    kmeans_scores = [kmeans_results[k]["silhouette"] for k in ks]
-
-    plt.figure(figsize=(6, 4))
-    plt.plot(
-        ks,
-        hier_scores,
-        marker="o",
-        color="#c31e23",
-        label="Hierarchical (correlation)"
-    )
-    plt.plot(
-        ks,
-        kmeans_scores,
-        marker="o",
-        color="#0d7d87",
-        label="k-means (Euclidean on z-scored profiles)"
-    )
-
-    # --- annotate k = 4 ---
-    k_annot = 4
-    hier_k4 = hier_results[k_annot]["silhouette"]
-    km_k4 = kmeans_results[k_annot]["silhouette"]
-
-    plt.annotate(
-        f"{hier_k4:.3f}",
-        xy=(k_annot, hier_k4),
-        xytext=(0, 8),
-        textcoords="offset points",
-        ha="center",
-        color="#000000"
-    )
-
-    plt.annotate(
-        f"{km_k4:.3f}",
-        xy=(k_annot, km_k4),
-        xytext=(0, 8),
-        textcoords="offset points",
-        ha="center",
-        color="#000000"
-    )
-    # ----------------------
-
-    plt.xlabel("Number of clusters (k)")
-    plt.ylabel("Silhouette score")
-    plt.title("Silhouette Score vs k")
-
-    plt.legend()
-
-    ax = plt.gca()
-    ax.set_xticks(ks)
-
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-
-    plt.tight_layout()
-    plt.savefig("silhouette_comparison.pdf", format="pdf", dpi=600, bbox_inches="tight")
-    plt.close()
 
 def kmeans_silhouette_by_k(
     X: np.ndarray,

@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import matplotlib.patches as patches
+from scipy.cluster.hierarchy import dendrogram
 from matplotlib.colors import LogNorm
 
 
@@ -122,3 +122,89 @@ def zscore_per_gene_df(df: pd.DataFrame, cols: list[str], prefix: str = "Z_") ->
         columns=[f"{prefix}{c}" for c in cols],
         index=df.index
     )
+
+
+def plot_silhouette_comparison(hier_results, kmeans_results):
+    """
+    Plot silhouette score vs k for hierarchical clustering and k-means.
+    Annotates points with cluster sizes in a clean [num1, num2] format.
+    """
+    ks = sorted(hier_results.keys())
+
+    hier_scores = [hier_results[k]["silhouette"] for k in ks]
+    kmeans_scores = [kmeans_results[k]["silhouette"] for k in ks]
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(
+        ks,
+        hier_scores,
+        marker="o",
+        color="#c31e23",
+        label="Hierarchical (correlation)"
+    )
+    plt.plot(
+        ks,
+        kmeans_scores,
+        marker="o",
+        color="#0d7d87",
+        label="k-means (Euclidean on z-scored profiles)"
+    )
+
+    # --- Annotate each point with cluster sizes ---
+    for k in ks:
+        # Hierarchical Labels
+        h_labels = hier_results[k]["labels"]
+        _, h_counts = np.unique(h_labels, return_counts=True)
+        # .tolist() removes the np.int64 wrapper for a clean string
+        h_size_str = f"sizes: {h_counts.tolist()}"
+
+        plt.annotate(
+            h_size_str,
+            xy=(k, hier_results[k]["silhouette"]),
+            xytext=(10, 10),
+            textcoords="offset points",
+            ha="left",
+            fontsize=8,
+            color="#c31e23",
+            fontweight='bold'
+        )
+
+        # K-means Labels
+        km_labels = kmeans_results[k]["labels"]
+        _, km_counts = np.unique(km_labels, return_counts=True)
+        km_size_str = f"sizes: {km_counts.tolist()}"
+
+        offset = 6 if k == 4 else 0
+
+        plt.annotate(
+            km_size_str,
+            xy=(k, kmeans_results[k]["silhouette"]),
+            xytext=(10, 10-offset),
+            textcoords="offset points",
+            ha="left",
+            fontsize=8,
+            color="#0d7d87",
+            fontweight='bold'
+        )
+    # ----------------------------------------------
+
+    plt.xlabel("Number of clusters (k)")
+    plt.ylabel("Silhouette score")
+    #plt.title("Silhouette Score vs k (Annotated with Cluster Sizes)")
+
+    plt.legend(loc='upper right')
+
+    ax = plt.gca()
+    ax.set_xticks(ks)
+
+    # Padding to ensure labels near the top/right edges aren't cut off
+    y_min, y_max = ax.get_ylim()
+    ax.set_ylim(y_min - 0.05, y_max + 0.1)
+    ax.set_xlim(min(ks) - 0.5, max(ks) + 1.5)
+
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+    plt.tight_layout()
+    plt.savefig("silhouette_comparison.pdf", format="pdf", dpi=600, bbox_inches="tight")
+    plt.close()

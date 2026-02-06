@@ -1,9 +1,14 @@
-from eda import load_and_transform, zscore_per_gene_df, plot_triple_clustered_heatmap
+from eda import (
+    load_and_transform,
+    visualize_to_pdf,
+    zscore_per_gene_df,
+    plot_triple_clustered_heatmap,
+    plot_silhouette_comparison
+)
 from clustering import (
     correlation_distance_condensed,
     hierarchical_silhouette_by_k,
     kmeans_silhouette_by_k,
-    plot_silhouette_comparison,
 )
 import numpy as np
 
@@ -13,8 +18,7 @@ raw_df, processed_df, ratio_cols = load_and_transform()
 print("Finished loading and transforming data...")
 
 # Optional EDA outputs
-# visualize_to_pdf(raw_df, processed_df, ratio_cols)
-# plot_heatmap_before_after(raw_df, processed_df, ratio_cols)
+visualize_to_pdf(raw_df, processed_df, ratio_cols)
 
 # 2) Build log2 expression matrix
 X_log = processed_df[[f"Log2_{c}" for c in ratio_cols]].to_numpy(dtype=np.float64)
@@ -25,7 +29,7 @@ dist_vec = correlation_distance_condensed(X_log)
 
 hier_results = hierarchical_silhouette_by_k(
     dist_vec,
-    k_range=range(2, 7),
+    k_range=range(2, 6),
     method="average"
 )
 
@@ -38,7 +42,7 @@ X_log_z = np.nan_to_num(X_log_z, nan=0.0)
 # 6) k-means: silhouette-by-k (k=2..5)
 kmeans_results = kmeans_silhouette_by_k(
     X_log_z,
-    k_range=range(2, 7),
+    k_range=range(2, 6),
     random_state=42,
     n_init=20
 )
