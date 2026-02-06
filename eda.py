@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.patches as patches
+from matplotlib.colors import LogNorm
 
 
 def load_and_transform(file_path: str = "Data/diauxic_raw_ratios.txt"):
@@ -46,7 +47,6 @@ def visualize_to_pdf(df_raw, df_log, ratio_cols, output_name="distribution_plots
     plt.savefig(output_name, format='pdf', bbox_inches='tight')
     plt.close()
 
-
 def plot_triple_clustered_heatmap(df, ratio_cols, output_name="clustered_heatmaps.pdf"):
     # 1. Prepare data for Graph 1 & 2 (Original Order)
     log_cols = [f"Log2_{c}" for c in ratio_cols]
@@ -69,13 +69,39 @@ def plot_triple_clustered_heatmap(df, ratio_cols, output_name="clustered_heatmap
 
     fig, axes = plt.subplots(1, 3, figsize=(20, 10))
 
-    # Assign matrices to plots
-    matrices = [X_raw_orig, X_z_orig, X_z_clust]
-    titles = ["Raw Ratios", "Z-scored Log2 (Original)", "Z-scored Log2 (Clustered)"]
+    # Graph 1: Raw Ratios with Logarithmic Scaling
+    # center=1.0 is the "no change" point for ratios
+    sns.heatmap(
+        X_raw_orig,
+        ax=axes[0],
+        cmap="RdBu_r",
+        norm=LogNorm(vmin=0.1, vmax=10), # Adjust vmin/vmax based on your data spread
+        yticklabels=False
+    )
+    axes[0].set_title("Raw Ratios (Log-Scaled Color)")
 
-    for i, ax in enumerate(axes):
-        sns.heatmap(matrices[i], ax=ax, cmap="RdBu_r", center=0, yticklabels=False)
-        ax.set_title(titles[i])
+    # Graph 2: Z-scored (Original Order)
+    sns.heatmap(
+        X_z_orig,
+        ax=axes[1],
+        cmap="RdBu_r",
+        center=0,
+        yticklabels=False
+    )
+    axes[1].set_title("Z-scored Log2 (Original)")
+
+    # Graph 3: Z-scored (Clustered Order)
+    sns.heatmap(
+        X_z_clust,
+        ax=axes[2],
+        cmap="RdBu_r",
+        center=0,
+        yticklabels=False
+    )
+    axes[2].set_title("Z-scored Log2 (Clustered)")
+
+    # Standardize x-axis formatting for all plots
+    for ax in axes:
         ax.set_xticklabels(ratio_cols, rotation=45, ha="right")
 
     plt.tight_layout()
