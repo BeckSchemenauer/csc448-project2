@@ -3,12 +3,17 @@ from eda import (
     visualize_to_pdf,
     zscore_per_gene_df,
     plot_triple_clustered_heatmap,
-    plot_silhouette_comparison
+    plot_silhouette_comparison,
 )
 from clustering import (
     correlation_distance_condensed,
     hierarchical_silhouette_by_k,
     kmeans_silhouette_by_k,
+)
+from gene_selection import (
+    extract_author_230,
+    select_top_genes_min_max,
+    select_genes_by_mean_shift,
 )
 import numpy as np
 
@@ -53,3 +58,23 @@ plot_triple_clustered_heatmap(processed_df, ratio_cols)
 print("Generating distribution plots...")
 visualize_to_pdf(raw_df, processed_df, log_zscore_df, ratio_cols)
 print("Done.")
+
+# 8) Get top genes
+author_genes = extract_author_230(
+    input_file="data/230_authors.txt",
+    output_file="top_230_author.txt"
+)
+
+# --- Select top 230 genes by diauxic-shift metric ---
+top_genes = select_top_genes_min_max(df=processed_df, log_cols=log_cols, n_genes=230,
+                                     output_file="top_230_method1.txt")
+
+# --- Method 2: Mean pre/post diauxic shift selection ---
+top_genes_method2 = select_genes_by_mean_shift(
+    df=processed_df,
+    log_cols=log_cols,
+    top_gain_n=115,
+    top_drop_n=115,
+    output_file="top_230_method2.txt",
+)
+

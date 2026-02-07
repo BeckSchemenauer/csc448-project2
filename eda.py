@@ -2,17 +2,34 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from scipy.cluster.hierarchy import dendrogram
 from matplotlib.colors import LogNorm
 
 
 def load_and_transform(file_path: str = "Data/diauxic_raw_ratios.txt"):
     df = pd.read_csv(file_path, sep="\t")
-    ratio_cols = [col for col in df.columns if 'Ratio' in col]
 
+    ratio_cols = [col for col in df.columns if "Ratio" in col]
+
+    # Log2 transform
     log_df = df.copy()
     for col in ratio_cols:
         log_df[f"Log2_{col}"] = np.log2(df[col].replace(0, np.nan))
+
+    log_cols = [f"Log2_{c}" for c in ratio_cols]
+
+    # collapse duplicate ORFs
+    if "ORF" in log_df.columns:
+        # Compute per-gene variability (std across time)
+        log_df["_tmp_std"] = log_df[log_cols].std(axis=1, skipna=True)
+
+        # Keep the most variable instance of each ORF
+        log_df = (
+            log_df
+            .sort_values("_tmp_std", ascending=False)
+            .drop_duplicates(subset="ORF", keep="first")
+            .drop(columns="_tmp_std")
+            .reset_index(drop=True)
+        )
 
     return df, log_df, ratio_cols
 
