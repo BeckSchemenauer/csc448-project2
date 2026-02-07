@@ -272,3 +272,58 @@ def plot_method_vs_author_silhouette(m1_results, author_results, output_name="me
     plt.tight_layout()
     plt.savefig(output_name, format="pdf", dpi=600)
     plt.close()
+
+def plot_selection_comparison_heatmap(df_m1, df_author, ratio_cols, output_name="method_vs_author_heatmap.pdf"):
+    """
+    Plots side-by-side clustered heatmaps for Method 1 and Author gene selections.
+    Expects both DataFrames to have a 'Cluster' column.
+    """
+    log_cols = [f"Log2_{c}" for c in ratio_cols]
+
+    # Sort both by cluster to show grouped patterns
+    m1_sorted = df_m1.sort_values("Cluster")
+    auth_sorted = df_author.sort_values("Cluster")
+
+    # Helper to get Z-scored data for plotting
+    def get_z_data(df):
+        X = df[log_cols].values
+        mean = np.nanmean(X, axis=1, keepdims=True)
+        std = np.nanstd(X, axis=1, keepdims=True)
+        return (X - mean) / np.where(std == 0, 1.0, std)
+
+    X_m1_z = get_z_data(m1_sorted)
+    X_auth_z = get_z_data(auth_sorted)
+
+    fig, axes = plt.subplots(1, 2, figsize=(16, 10))
+
+    # Graph 1: Method 1 Clustered
+    sns.heatmap(
+        X_m1_z,
+        ax=axes[0],
+        cmap="RdBu_r",
+        center=0,
+        yticklabels=False,
+        cbar_kws={'label': 'Z-score'}
+    )
+    axes[0].set_title(f"Method 1: Top 230 (n={len(df_m1)})")
+
+    # Graph 2: Authors Clustered
+    sns.heatmap(
+        X_auth_z,
+        ax=axes[1],
+        cmap="RdBu_r",
+        center=0,
+        yticklabels=False,
+        cbar_kws={'label': 'Z-score'}
+    )
+    axes[1].set_title(f"Authors: Top 230 (n={len(df_author)})")
+
+    # Formatting
+    for ax in axes:
+        ax.set_xticklabels(ratio_cols, rotation=45, ha="right")
+        ax.set_xlabel("Time Points")
+
+    plt.tight_layout()
+    plt.savefig(output_name, format="pdf", bbox_inches="tight")
+    plt.close()
+    print(f"Comparison heatmap saved to {output_name}")

@@ -5,6 +5,7 @@ from eda import (
     plot_triple_clustered_heatmap,
     plot_silhouette_comparison,
     plot_method_vs_author_silhouette,
+    plot_selection_comparison_heatmap,
 )
 from clustering import (
     correlation_distance_condensed,
@@ -154,3 +155,15 @@ analysis_results = {
 }
 
 print("Plot saved as 'method_vs_author_silhouette.pdf'")
+
+# Assign clusters
+k_choice = 2
+m1_subset_df['Cluster'] = m1_clustering_results[k_choice]["labels"]
+author_subset_df['Cluster'] = author_clustering_results[k_choice]["labels"]
+
+# Plot the side-by-side comparison
+plot_selection_comparison_heatmap(
+    m1_subset_df,
+    author_subset_df,
+    ratio_cols
+)
