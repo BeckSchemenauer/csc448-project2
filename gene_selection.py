@@ -5,18 +5,6 @@ def extract_author_230(
     input_file: str = "data/230_authors.txt",
     output_file: str = "top_230_author.txt"
 ):
-    """
-    Extract gene names from the authors' 230-gene list and
-    write one gene name per line to a text file.
-
-    Parameters
-    ----------
-    input_file : str
-        Path to the authors' gene list file.
-    output_file : str
-        Output file path.
-    """
-
     # Read tab-delimited file
     df = pd.read_csv(input_file, sep="\t")
 
@@ -46,7 +34,7 @@ def select_top_genes_min_max(
     output_file: str = "top_230_method1.txt"
 ):
 
-    # --- Define early and late phase columns ---
+    # Define early and late phase columns
     early_cols = log_cols[0:3]   # time points 1–3
     late_cols  = log_cols[4:7]   # time points 5–7
 
@@ -67,11 +55,11 @@ def select_top_genes_min_max(
 
         scores.append((row[gene_col], score))
 
-    # --- Rank genes ---
+    # Rank genes
     scores.sort(key=lambda x: x[1], reverse=True)
     top_genes = scores[:n_genes]
 
-    # --- Write gene names to file ---
+    # Write gene names to file
     with open(output_file, "w") as f:
         for gene, _ in top_genes:
             f.write(f"{gene}\n")
@@ -125,7 +113,7 @@ def select_genes_by_mean_shift(
     top_gain = res.sort_values("delta", ascending=False).head(top_gain_n)
     top_drop = res.sort_values("delta", ascending=True).head(top_drop_n)
 
-    # Combine, preserving priority: abs → gain → drop
+    # Combine
     combined = pd.concat([top_gain, top_drop], axis=0)
 
     # Drop duplicates while preserving order

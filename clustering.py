@@ -8,9 +8,6 @@ from sklearn.cluster import KMeans
 
 @njit
 def _corr_distance(xi: np.ndarray, xj: np.ndarray) -> float:
-    """
-    Correlation distance = 1 - Pearson correlation.
-    """
     n = xi.shape[0]
 
     mean_i = 0.0
@@ -40,19 +37,6 @@ def _corr_distance(xi: np.ndarray, xj: np.ndarray) -> float:
 
 @njit(parallel=True)
 def correlation_distance_condensed(X: np.ndarray) -> np.ndarray:
-    """
-    Compute condensed (upper-triangle) correlation distance vector
-    between rows of X.
-
-    Parameters
-    ----------
-    X : ndarray of shape (n_genes, n_timepoints)
-
-    Returns
-    -------
-    dists : ndarray of shape (n_genes * (n_genes - 1) // 2,)
-        Condensed distance matrix compatible with scipy linkage.
-    """
     n = X.shape[0]
     size = n * (n - 1) // 2
     dists = np.empty(size, dtype=np.float32)
@@ -71,24 +55,6 @@ def hierarchical_silhouette_by_k(
     k_range=range(2, 6),
     method="average"
 ):
-    """
-    Compute silhouette scores for hierarchical clustering
-    for k in k_range.
-
-    Parameters
-    ----------
-    dist_vec : np.ndarray
-        Condensed distance vector (e.g. correlation distance).
-    k_range : iterable
-        Cluster counts to evaluate (default: 2..5).
-    method : str
-        Linkage method.
-
-    Returns
-    -------
-    results : dict
-        {k: {"silhouette": float, "labels": np.ndarray, "linkage": Z}}
-    """
     # Linkage matrix
     Z = linkage(dist_vec, method=method)
 
@@ -116,28 +82,6 @@ def kmeans_silhouette_by_k(
     n_init: int = 20,
     max_iter: int = 300
 ):
-    """
-    Run k-means for k in k_range and compute silhouette score (Euclidean)
-    for each k.
-
-    Parameters
-    ----------
-    X : np.ndarray
-        Data matrix of shape (n_genes, n_timepoints), e.g. your z-scored log2 matrix.
-    k_range : iterable
-        Cluster counts to evaluate (default: 2..5).
-    random_state : int
-        Reproducibility seed.
-    n_init : int
-        Number of k-means initializations.
-    max_iter : int
-        Max iterations per run.
-
-    Returns
-    -------
-    results : dict
-        {k: {"silhouette": float, "labels": np.ndarray, "model": KMeans}}
-    """
     results = {}
 
     for k in k_range:

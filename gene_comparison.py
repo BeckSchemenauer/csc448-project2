@@ -50,11 +50,11 @@ def venn_and_jaccard_3(
         labels[2]: _read_gene_set(file_c),
     }
 
-    # --- Print sizes ---
+    # Print sizes
     for name, s in sets.items():
         print(f"{name}: {len(s)} genes")
 
-    # --- Pairwise Jaccard + overlap counts ---
+    # Pairwise Jaccard + overlap counts
     print("\nPairwise overlap + Jaccard:")
     for (name1, s1), (name2, s2) in combinations(sets.items(), 2):
         inter = len(s1 & s2)
@@ -62,7 +62,7 @@ def venn_and_jaccard_3(
         jac = jaccard(s1, s2)
         print(f"- {name1} vs {name2}: |∩|={inter}, |∪|={union}, Jaccard={jac:.4f}")
 
-    # --- Venn diagram ---
+    # Venn diagram
     plt.figure(figsize=(7, 6))
     venn3([sets[labels[0]], sets[labels[1]], sets[labels[2]]], set_labels=labels)
 

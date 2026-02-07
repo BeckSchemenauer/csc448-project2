@@ -38,29 +38,28 @@ def visualize_to_pdf(df_raw, df_log, df_z, ratio_cols, output_name="distribution
     sns.set_context("talk")
     fig, axes = plt.subplots(1, 3, figsize=(20, 6))  # Changed to 3 subplots
 
-    # 1. Flatten and clean data
+    # Flatten and clean data
     raw_vals = df_raw[ratio_cols].values.flatten()
     log_vals = df_log[[f"Log2_{c}" for c in ratio_cols]].values.flatten()
-    # Assuming the Z-score columns have the "Z_" prefix from your zscore_per_gene_df function
     z_vals = df_z[[f"Z_Log2_{c}" for c in ratio_cols]].values.flatten()
 
     raw_vals = raw_vals[~np.isnan(raw_vals)]
     log_vals = log_vals[~np.isnan(log_vals)]
     z_vals = z_vals[~np.isnan(z_vals)]
 
-    # 2. Raw Ratios Plot
+    # Raw Ratios Plot
     sns.histplot(raw_vals, kde=False, ax=axes[0], color='#154734',
                  edgecolor='black', linewidth=0.5, binwidth=0.1)
     # axes[0].set_title("Distribution: Raw Ratios") # Commented for Overleaf
     axes[0].set_xlabel("Ratio Value")
 
-    # 3. Log2 Plot
+    # Log2 Plot
     sns.histplot(log_vals, kde=False, ax=axes[1], color='#154734',
                  edgecolor='black', linewidth=0.5, binwidth=0.2)
     # axes[1].set_title(r"Distribution: $\mathrm{Log}_2$ Transformed") # Commented for Overleaf
     axes[1].set_xlabel(r"$\log_2$ Ratio")
 
-    # 4. Z-scored Plot
+    # Z-scored Plot
     sns.histplot(z_vals, kde=False, ax=axes[2], color='#154734',
                  edgecolor='black', linewidth=0.5, binwidth=0.2)
     # axes[2].set_title("Distribution: Z-scored") # Commented for Overleaf
@@ -77,7 +76,7 @@ def visualize_to_pdf(df_raw, df_log, df_z, ratio_cols, output_name="distribution
     plt.close()
 
 def plot_triple_clustered_heatmap(df, ratio_cols, output_name="clustered_heatmaps.pdf"):
-    # 1. Prepare data for Graph 1 & 2 (Original Order)
+    # Prepare data for Graph 1 & 2 (Original Order)
     log_cols = [f"Log2_{c}" for c in ratio_cols]
     X_raw_orig = df[ratio_cols].values
     X_log_orig = df[log_cols].values
@@ -87,7 +86,7 @@ def plot_triple_clustered_heatmap(df, ratio_cols, output_name="clustered_heatmap
     std_orig = np.nanstd(X_log_orig, axis=1, keepdims=True)
     X_z_orig = (X_log_orig - mean_orig) / np.where(std_orig == 0, 1.0, std_orig)
 
-    # 2. Prepare data for Graph 3 (Clustered Order)
+    # Prepare data for Graph 3 (Clustered Order)
     df_sorted = df.sort_values("Cluster")
     X_log_clust = df_sorted[log_cols].values
 
@@ -99,12 +98,11 @@ def plot_triple_clustered_heatmap(df, ratio_cols, output_name="clustered_heatmap
     fig, axes = plt.subplots(1, 3, figsize=(20, 10))
 
     # Graph 1: Raw Ratios with Logarithmic Scaling
-    # center=1.0 is the "no change" point for ratios
     sns.heatmap(
         X_raw_orig,
         ax=axes[0],
         cmap="RdBu_r",
-        norm=LogNorm(vmin=0.1, vmax=10), # Adjust vmin/vmax based on your data spread
+        norm=LogNorm(vmin=0.1, vmax=10),
         yticklabels=False
     )
     axes[0].set_title("Raw Ratios (Log-Scaled Color)")
@@ -179,7 +177,7 @@ def plot_silhouette_comparison(hier_results, kmeans_results):
         label="k-means (Euclidean)"
     )
 
-    # --- Annotate each point with cluster sizes ---
+    # Annotate each point with cluster sizes
     for k in ks:
         # Hierarchical Labels
         h_labels = hier_results[k]["labels"]
@@ -194,7 +192,7 @@ def plot_silhouette_comparison(hier_results, kmeans_results):
             textcoords="offset points",
             ha="left",
             fontsize=8,
-            color="#c31e23",
+            color="#000000",
             fontweight='bold'
         )
 
@@ -212,7 +210,7 @@ def plot_silhouette_comparison(hier_results, kmeans_results):
             textcoords="offset points",
             ha="left",
             fontsize=8,
-            color="#0d7d87",
+            color="#000000",
             fontweight='bold'
         )
     # ----------------------------------------------
