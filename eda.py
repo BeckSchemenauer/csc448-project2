@@ -34,7 +34,7 @@ def load_and_transform(file_path: str = "Data/diauxic_raw_ratios.txt"):
     return df, log_df, ratio_cols
 
 
-def visualize_to_pdf(df_raw, df_log, df_z, ratio_cols, output_name="distribution_plots.pdf"):
+def plot_distribution(df_raw, df_log, df_z, ratio_cols, output_name="distribution_plots.pdf"):
     sns.set_context("talk")
     fig, axes = plt.subplots(1, 3, figsize=(20, 6))  # Changed to 3 subplots
 
@@ -234,4 +234,41 @@ def plot_silhouette_comparison(hier_results, kmeans_results):
 
     plt.tight_layout()
     plt.savefig("silhouette_comparison.pdf", format="pdf", dpi=600, bbox_inches="tight")
+    plt.close()
+
+
+def plot_method_vs_author_silhouette(m1_results, author_results, output_name="method_vs_author_silhouette.pdf"):
+    """
+    Compares silhouette scores for two different gene subsets using hierarchical clustering.
+    """
+    ks = sorted(m1_results.keys())
+    m1_scores = [m1_results[k]["silhouette"] for k in ks]
+    auth_scores = [author_results[k]["silhouette"] for k in ks]
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(ks, m1_scores, marker="o", color="#c31e23", label="Method 1 (Top 230)")
+    plt.plot(ks, auth_scores, marker="o", color="#0d7d87", label="Authors (Top 230)")
+
+    for k in ks:
+        # Annotation for Method 1
+        m1_counts = np.unique(m1_results[k]["labels"], return_counts=True)[1]
+        plt.annotate(f"sizes: {m1_counts.tolist()}", xy=(k, m1_results[k]["silhouette"]),
+                     xytext=(10, 10), textcoords="offset points", fontsize=8, fontweight='bold')
+
+        # Annotation for Authors
+        auth_counts = np.unique(author_results[k]["labels"], return_counts=True)[1]
+        plt.annotate(f"sizes: {auth_counts.tolist()}", xy=(k, author_results[k]["silhouette"]),
+                     xytext=(10, -15), textcoords="offset points", fontsize=8, fontweight='bold')
+
+    plt.xlabel("Number of clusters (k)")
+    plt.ylabel("Silhouette score")
+    plt.legend(loc='upper right')
+
+    ax = plt.gca()
+    ax.set_xticks(ks)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+    plt.tight_layout()
+    plt.savefig(output_name, format="pdf", dpi=600)
     plt.close()
